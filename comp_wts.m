@@ -6,17 +6,13 @@ function gam_val = comp_wts(Gam_vec,w_vec,s_vec,s_max)
     % - s_vec : smoothness wts
     % - s_max : maximum smoothness
 
-    d = length(w_vec);
+    d = length(w_vec); %dimension of input
     gam_mtx = permn(0:s_max,d);
-    gam_val = zeros(size(gam_mtx,1),1);
-    for (i = 1:size(gam_mtx,1))
-        run_prod = 1.0;
-        act_idx = find(gam_mtx(i,:)>0);
-        for (j = act_idx)
-            run_prod = run_prod * w_vec(j) * s_vec(gam_mtx(i,j)+1);
-            % run_prod = run_prod * (w_vec(j)*(gam_mtx(i,j)>0.0)) * s_vec(gam_mtx(i,j)+1);
-        end
-        gam_val(i) = Gam_vec(nnz(gam_mtx(i,:))+1) * run_prod;
+    nbasis = size(gam_mtx,1);
+    gam_val = ones(nbasis,1);
+    for i = 2:nbasis
+       act_idx = gam_mtx(i,:) > 0;
+       gam_val(i) = Gam_vec(nnz(gam_mtx(i,:))+1) .* prod(w_vec(act_idx) .* s_vec(gam_mtx(i,act_idx)+1));
     end
 
 end
