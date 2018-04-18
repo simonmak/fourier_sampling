@@ -3,6 +3,7 @@
 % - Direct Fourier sampling (no f'n evals)
 
 % Simulation settings
+close all
 d = 5;     %dimension
 Gam_vec = 1./factorial(0:d); %\Gamma (order wts)
 w_vec = 1./((1:d).^2); %w (product wts)
@@ -10,7 +11,8 @@ s_max = 3; %maximum smoothness
 s_vec = 1./(( (0:s_max) +1).^2); %s (smoothness wts)
 nm_flg = false; % do we know l-\infty norm?
 w_flg = false; % do we know product weights?
-rand_flg = false; % random +/- of Fourier coefficients?
+rand_flg = true; % random +/- of Fourier coefficients?
+randCoordOrder_flg = true; %randomize the order of the weights
 
 if (~w_flg)
     w_vec = -1*ones(d,1); %set dummy weights if no flag
@@ -27,6 +29,10 @@ Gam_vec_tr = 1./factorial(0:d); %\Gamma (order wts)
 w_vec_tr = 1./((1:d).^2); %w (product wts)
 s_max_tr = 3; %maximum smoothness
 s_vec_tr = 1./(( (0:s_max_tr) +1).^2); %s (smoothness wts)
+if randCoordOrder_flg
+   w_vec_tr = w_vec_tr(randperm(d));
+end
+   
 
 C = 1.2; % inflation factor
 n0 = s_max; % pilot sample
@@ -36,7 +42,8 @@ w_ini = 0.25*ones(d,1); %init. for w optimization
 % Compute Fourier coef and gammas
 four_coef = comp_wts(Gam_vec_tr,w_vec_tr,s_vec_tr,s_max_tr);
 if (rand_flg)
-    rad_seq = (rand(length(four_coef),1)<.5)*2 - 1; % sample Rademacher(0.5)
+%     rad_seq = (rand(length(four_coef),1)<.5)*2 - 1; % sample Rademacher(0.5)
+    rad_seq = rand(length(four_coef),1)*2 - 1; % sample Rademacher(0.5)
 else
     rad_seq = ones(length(four_coef),1);
 end
@@ -101,16 +108,16 @@ for (m = 1:length(eps_vec))
 
 end
 
-%Plot results
+%%Plot results
 rat_vec = err_vec./eps_vec; %sample size vs error ratios
 cols = linspace(0,10,length(rat_vec))';
 figure
-scatter(rat_vec,n_vec,[],eps_vec,'x')
+scatter(rat_vec,n_vec,[],log10(eps_vec),'x')
 xlim([0 1])
 xlabel({'$||f-\hat{f}||_{\infty}/\epsilon$'},'Interpreter','latex','FontSize',14)
 ylabel({'Sample size $n$'},'Interpreter','latex','FontSize',14)
 hcb = colorbar;
-title(hcb,'\epsilon','FontSize',14)
+title(hcb,'\(\log_{10}(\epsilon)\)','FontSize',14,'Interpreter','latex')
 
 % %Visualize (only in 2-d)
 % n_grd = 100;
