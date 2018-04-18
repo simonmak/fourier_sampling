@@ -6,12 +6,12 @@
 close all
 d = 5;     %dimension
 Gam_vec = 1./factorial(0:d); %\Gamma (order wts)
-w_vec = 1./((1:d).^2); %w (product wts)
+w_vec = 1./((1:d).^2); %w (product wts) if known
 s_max = 3; %maximum smoothness
 s_vec = 1./(( (0:s_max) +1).^2); %s (smoothness wts)
 nm_flg = false; % do we know l-\infty norm?
 w_flg = false; % do we know product weights?
-rand_flg = false; % random +/- of Fourier coefficients?
+rand_flg = true; % random +/- of Fourier coefficients?
 randCoordOrder_flg = false; %randomize the order of the weights
 
 if ~w_flg
@@ -37,7 +37,7 @@ end
 C = 1.2; % inflation factor
 n0 = s_max; % pilot sample
 
-w_ini = 0.25*ones(1,d); %init. for w optimization
+%w_ini = 0.25*ones(1,d); %init. for w optimization
 
 % Compute Fourier coef and gammas
 four_coef = comp_wts(Gam_vec_tr,w_vec_tr,s_vec_tr,s_max_tr);
