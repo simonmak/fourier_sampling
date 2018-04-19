@@ -8,7 +8,7 @@ figure
 log10epsVec = log10(eps_vec);
 scatter(rat_vec,n_vec,800,log10epsVec,'.')
 set(gca,'YScale','log')
-xlim([0 1])
+xlim([0 max([rat_vec*1.2;1])])
 ylim(10.^[floor(log10(min(n_vec))) ceil(log10(max(n_vec)))])
 xlabel({'\(||f-\hat{f}||_{\infty}/\epsilon\)'})
 ylabel({'Sample size \(n\)'})
@@ -70,4 +70,5 @@ rotate3d on
 f_app_Vis = reshape(f_app_Vis,[n_grd_val n_grd_val]);
 surf(x_grd,x_grd,f_app_Vis); shading interp
 
+figure(1)
 
