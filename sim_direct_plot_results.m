@@ -19,30 +19,55 @@ tickLabels = 10.^tickVals;
 set(hcb,'Ticks',tickVals,'TickLabels',tickLabels, ...
    'Limits',[tickVals(1) tickVals(end)])
 
-% %Visualize (only in 2-d)
-% n_grd = 100;
-% x_grd = -1:(2/n_grd):1;
-% f_true = zeros(length(x_grd),length(x_grd));
-% f_app = zeros(length(x_grd),length(x_grd));
-% 
-% for (i = 1:size(gam_mtx,1))
-%     cur_idx = gam_mtx(i,:);
-%     run_sum = gam_val(i)*(legendreP(cur_idx(1),x_grd))'*legendreP(cur_idx(2),x_grd);
-%     %run_sum = run_sum / sqrt(2/(2*cur_idx(1)+1)) / sqrt(2/(2*cur_idx(2)+1)); %normalize
-%     f_true = f_true + run_sum;
-%     if (ismember(i,gam_idx(1:nn)))
-%         f_app = f_app + run_sum;
-%     end
-% end
-% 
-% % figure
-% % rotate3d on
-% % [plotX,plotY] = meshgrid(x_grd);
-% % mesh(plotX,plotY,f_true)
-% % 
-% % figure
-% % rotate3d on
-% % [plotX,plotY] = meshgrid(x_grd);
-% % mesh(plotX,plotY,f_app)
+%% Visualize (only a 2-d projection)
+xcoord = 1;
+ycoord = 2;
+nom_Val = 0;
+n_grd = 100;
+x_grd = -1:(2/n_grd):1;
+n_grd_val = length(x_grd);
+[xx,yy] = meshgrid(x_grd);
+n_Vis = n_grd_val.^2;
+x_Vis = nom_Val*ones(n_Vis,d);
+x_Vis(:,xcoord) = xx(:);
+x_Vis(:,ycoord) = yy(:);
+lp_Vis(n_Vis,d,s_max+1) = 0;
+lp_Vis(:,:,1) = 1;
+for s = 1:s_max
+  temp = legendre(s,x_Vis); %generate associated Legendre functions
+  lp_Vis(:,:,s+1) = squeeze(temp(1,:,:)); %keep Legendre polynomials
+end
+
+%Evaluate f_true
+f_true_Vis(n_Vis,1) = 0;
+for j = 1:nBasis
+   addPart = ones(n_Vis,1);
+   for ell = 1:d
+      addPart = addPart .* lp_Vis(:,ell,gam_mtx(j,ell)+1);
+   end
+   f_true_Vis = f_true_Vis + four_coef(j)*addPart;
+end
+
+%Evaluate f_app
+f_app_Vis = zeros(n_Vis,1);
+for j = 1:nn
+ jj = gam_idx(j); %which basis is next smallest
+ addPart = ones(n_Vis,1);
+ for ell = 1:d
+    addPart = addPart .* lp_Vis(:,ell,gam_mtx(jj,ell)+1);
+ end
+ f_app_Vis = f_app_Vis + four_coef(jj)*addPart;
+end
+
+
+figure
+rotate3d on
+f_true_Vis = reshape(f_true_Vis,[n_grd_val n_grd_val]);
+surf(x_grd,x_grd,f_true_Vis); shading interp
+
+figure
+rotate3d on
+f_app_Vis = reshape(f_app_Vis,[n_grd_val n_grd_val]);
+surf(x_grd,x_grd,f_app_Vis); shading interp
 
 
