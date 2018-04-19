@@ -9,13 +9,15 @@ log10epsVec = log10(eps_vec);
 scatter(rat_vec,n_vec,800,log10epsVec,'.')
 set(gca,'YScale','log')
 xlim([0 1])
+ylim(10.^[floor(log10(min(n_vec))) ceil(log10(max(n_vec)))])
 xlabel({'\(||f-\hat{f}||_{\infty}/\epsilon\)'})
 ylabel({'Sample size \(n\)'})
 hcb = colorbar;
 title(hcb,'\(\epsilon\)','Interpreter','latex')
 tickVals = floor(min(log10epsVec)):ceil(max(log10epsVec));
 tickLabels = 10.^tickVals;
-set(hcb,'Ticks',tickVals,'TickLabels',tickLabels)
+set(hcb,'Ticks',tickVals,'TickLabels',tickLabels, ...
+   'Limits',[tickVals(1) tickVals(end)])
 
 % %Visualize (only in 2-d)
 % n_grd = 100;

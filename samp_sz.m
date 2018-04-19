@@ -1,4 +1,4 @@
-function [nn,gam_val,w_est] = samp_sz(four_coef,Gam_vec,w_vec,s_vec,gam_mtx,p_val,eps,C,n0,samp_idx,nm_flg,w_flg,w_ini)
+function [nn,gam_val,w_est,samp_idx] = samp_sz(four_coef,Gam_vec,w_vec,s_vec,gam_mtx,p_val,eps,C,n0,samp_idx,nm_flg,w_flg)
     
     % Computes sample size given desired error tolerance eps
     % - four_coef : true fourier coefficients
