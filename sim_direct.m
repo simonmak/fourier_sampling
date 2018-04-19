@@ -9,6 +9,7 @@ Gam_vec = 1./factorial(0:d); %\Gamma (order wts)
 w_vec = 1./((1:d).^2); %w (product wts) if known
 s_max = 3; %maximum smoothness
 s_vec = 1./(( (0:s_max) +1).^2); %s (smoothness wts)
+gam_mtx = permn(0:s_max,d); %compute this just once for all
 nm_flg = false; % do we know l-\infty norm?
 w_flg = false; % do we know product weights?
 rand_flg = true; % random +/- of Fourier coefficients?
@@ -40,14 +41,14 @@ n0 = s_max; % pilot sample
 %w_ini = 0.25*ones(1,d); %init. for w optimization
 
 % Compute Fourier coef and gammas
-four_coef = comp_wts(Gam_vec_tr,w_vec_tr,s_vec_tr,s_max_tr);
+four_coef = comp_wts(Gam_vec_tr,w_vec_tr,s_vec_tr,gam_mtx);
 if rand_flg
 %  rad_seq = (rand(length(four_coef),1)<.5)*2 - 1; % sample Rademacher(0.5)
    rad_seq = rand(length(four_coef),1)*2 - 1; % uniform random numbers on [-1,1]
    four_coef = rad_seq .* four_coef;
 end
 
-gam_val = comp_wts(Gam_vec,w_vec,s_vec,s_max);
+gam_val = comp_wts(Gam_vec,w_vec,s_vec,gam_mtx);
 [gam_val_rk,gam_idx] = sort(gam_val,'descend'); %sort for importance
 
 % Run algorithm for different error tolerances
@@ -61,7 +62,7 @@ for m = 1:length(eps_vec)
     
     % Algorithm:
     % 1) Compute sample size nn:
-    [nn,gam_val,w_est] = samp_sz(four_coef,Gam_vec,w_vec,s_vec,s_max,[],eps,C,n0,[],nm_flg,w_flg,w_ini);
+    [nn,gam_val,w_est] = samp_sz(four_coef,Gam_vec,w_vec,s_vec,gam_mtx,[],eps,C,n0,[],nm_flg,w_flg,w_ini);
     [gam_val_rk,gam_idx] = sort(gam_val,'descend'); 
     n_vec(m) = nn;
 
