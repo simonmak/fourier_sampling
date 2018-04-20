@@ -14,7 +14,7 @@ xlabel({'\(||f-\hat{f}||_{\infty}/\epsilon\)'})
 ylabel({'Sample size \(n\)'})
 hcb = colorbar;
 title(hcb,'\(\epsilon\)','Interpreter','latex')
-tickVals = floor(min(log10epsVec)):ceil(max(log10epsVec));
+tickVals = floor(min_log10_eps:max_log10_eps);
 tickLabels = 10.^tickVals;
 set(hcb,'Ticks',tickVals,'TickLabels',tickLabels, ...
    'Limits',[tickVals(1) tickVals(end)])
@@ -31,34 +31,9 @@ n_Vis = n_grd_val.^2;
 x_Vis = nom_Val*ones(n_Vis,d);
 x_Vis(:,xcoord) = xx(:);
 x_Vis(:,ycoord) = yy(:);
-lp_Vis(n_Vis,d,s_max+1) = 0;
-lp_Vis(:,:,1) = 1;
-for s = 1:s_max
-  temp = legendre(s,x_Vis); %generate associated Legendre functions
-  lp_Vis(:,:,s+1) = squeeze(temp(1,:,:)); %keep Legendre polynomials
-end
-
-%Evaluate f_true
-f_true_Vis(n_Vis,1) = 0;
-for j = 1:nBasis
-   addPart = ones(n_Vis,1);
-   for ell = 1:d
-      addPart = addPart .* lp_Vis(:,ell,gam_mtx(j,ell)+1);
-   end
-   f_true_Vis = f_true_Vis + four_coef(j)*addPart;
-end
-
-%Evaluate f_app
-f_app_Vis = zeros(n_Vis,1);
-for j = 1:nn
- jj = gam_idx(j); %which basis is next smallest
- addPart = ones(n_Vis,1);
- for ell = 1:d
-    addPart = addPart .* lp_Vis(:,ell,gam_mtx(jj,ell)+1);
- end
- f_app_Vis = f_app_Vis + four_coef(jj)*addPart;
-end
-
+[f_true_Vis,basisVal] = eval_f_four(x_Vis,@legendreBasis,gam_mtx,s_max,four_coef);
+[f_app_Vis] = ...
+       eval_f_four([],basisVal,gam_mtx(gam_idx(1:nn),:),s_max,four_coef(gam_idx(1:nn)));
 
 figure
 rotate3d on

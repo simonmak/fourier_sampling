@@ -1,4 +1,4 @@
-function [nn,gam_val,w_est,samp_idx] = samp_sz(four_coef,Gam_vec,w_vec,s_vec,gam_mtx,p_val,eps,C,n0,samp_idx,nm_flg,w_flg)
+function [nn,gam_val,w_est,samp_idx] = samp_sz(four_coef,Gam_vec,w_vec,s_vec,gam_mtx,p_val,epsTol,C,n0,samp_idx,nm_flg,w_flg)
     
     % Computes sample size given desired error tolerance eps
     % - four_coef : true fourier coefficients
@@ -7,7 +7,7 @@ function [nn,gam_val,w_est,samp_idx] = samp_sz(four_coef,Gam_vec,w_vec,s_vec,gam
     % - s_vec : smoothness weights
     % - gam_mtx : matrix of possible wavenumbers
     % - p_val : l-infty norms of basis polynomials
-    % - eps : desired error tolerance
+    % - epsTol : desired error tolerance (don't use eps = machine epsilon)
     % - C : inflation factor
     % - n0 : initial samples
     % - nm_flg : true if we know ||\hat{f}||_\gamma
@@ -32,7 +32,7 @@ function [nn,gam_val,w_est,samp_idx] = samp_sz(four_coef,Gam_vec,w_vec,s_vec,gam
         % Compute (exact) f_hat
         f_hat_nm = max(abs(four_coef) .* p_val ./ gam_val); 
         % Set sample size
-        nn = length(gam_val_rk)-sum(cumsum(flipud(gam_val_rk)) <= eps/f_hat_nm); 
+        nn = length(gam_val_rk)-sum(cumsum(flipud(gam_val_rk)) <= epsTol/f_hat_nm); 
         w_est = w_vec;
         
     elseif w_flg %do if we know weights (but not norm)...
@@ -46,7 +46,7 @@ function [nn,gam_val,w_est,samp_idx] = samp_sz(four_coef,Gam_vec,w_vec,s_vec,gam
         % Approx. norm of f_hat
         f_hat_nm = C * max( abs(four_coef(samp_idx)) .* p_val(samp_idx) ./ gam_val(samp_idx) ); 
         % Set sample size
-        nn = nBasis-sum(cumsum(flipud(gam_val_rk)) <= eps/f_hat_nm); 
+        nn = nBasis-sum(cumsum(flipud(gam_val_rk)) <= epsTol/f_hat_nm); 
         nn = max(nn,n0);
         w_est = w_vec;
         
@@ -67,7 +67,8 @@ function [nn,gam_val,w_est,samp_idx] = samp_sz(four_coef,Gam_vec,w_vec,s_vec,gam
         for ell = 1:d
            uell(ell) = max(fpOvers(whCoord == ell));
         end
-        f_hat_pre = max(uell)/w_max; %smallest the norm can be
+%        f_hat_pre = max(uell)/w_max; %smallest the norm can be
+        f_hat_pre = max(max(uell)/w_max,abs(four_coef(1)*p_val(1))); %smallest the norm can be
         w_est = uell/f_hat_pre; %smallest the w_l can be
                
         %Update gamma with estimated product weights
@@ -75,8 +76,9 @@ function [nn,gam_val,w_est,samp_idx] = samp_sz(four_coef,Gam_vec,w_vec,s_vec,gam
         gam_val_rk = sort(gam_val,'descend');
 
         %Compute sample size
-        f_hat_nm = C * max( abs(four_coef(samp_idx)) .* p_val(samp_idx) ./ gam_val(samp_idx) ); % approx. f_hat
-        nn = length(gam_val_rk)-sum(cumsum(flipud(gam_val_rk)) <= eps/f_hat_nm); %set sample size
+        f_hat_nm = C * max(abs(four_coef(samp_idx)) .* p_val(samp_idx) ./ gam_val(samp_idx) ); % approx. f_hat
+        nn = find(cumsum(gam_val_rk,'reverse') <= epsTol/f_hat_nm,1); %set sample size
+%        nn = length(gam_val_rk)-sum(cumsum(flipud(gam_val_rk)) <= eps/f_hat_nm); %set sample size
         nn = max(nn,size(samp_idx,1));
     end
 
