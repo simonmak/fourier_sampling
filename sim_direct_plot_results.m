@@ -6,14 +6,14 @@ InitializeDisplay %add some variables for nice plotting
 
 figure
 log10epsVec = log10(eps_vec);
-scatter(rat_vec,n_vec,800,log10epsVec,'.')
+scatter(rat_vec,n_vec,800,log10epsVec,'.'); %plot ratio of actual error to tolerance, with color corresonding to tolerance
 set(gca,'YScale','log')
 xlim([0 max([rat_vec*1.2;1])])
 ylim(10.^[floor(log10(min(n_vec))) ceil(log10(max(n_vec)))])
-xlabel({'\(||f-\hat{f}||_{\infty}/\epsilon\)'})
+xlabel({'\(||f-\hat{f}||_{\infty}/\varepsilon\)'})
 ylabel({'Sample size \(n\)'})
-hcb = colorbar;
-title(hcb,'\(\epsilon\)','Interpreter','latex')
+hcb = colorbar; %showing tolerance values
+title(hcb,'\(\varepsilon\)','interpreter','latex')
 tickVals = floor(min_log10_eps:max_log10_eps);
 tickLabels = 10.^tickVals;
 set(hcb,'Ticks',tickVals,'TickLabels',tickLabels, ...
