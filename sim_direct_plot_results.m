@@ -31,7 +31,7 @@ n_Vis = n_grd_val.^2;
 x_Vis = nom_Val*ones(n_Vis,d);
 x_Vis(:,xcoord) = xx(:);
 x_Vis(:,ycoord) = yy(:);
-[f_true_Vis,basisVal] = eval_f_four(x_Vis,@legendreBasis,gam_mtx,s_max,four_coef);
+[f_true_Vis,basisVal] = eval_f_four(x_Vis,basisFun,gam_mtx,s_max,four_coef);
 [f_app_Vis] = ...
        eval_f_four([],basisVal,gam_mtx(gam_idx(1:nn),:),s_max,four_coef(gam_idx(1:nn)));
 

@@ -6,17 +6,26 @@
 close all
 clearvars
 d = 5;     %dimension
-Gam_vec = 1./factorial(0:d); %\Gamma (order wts)
-w_vec = 1./((1:d).^2); %w (product wts) if known
-s_max = 5; %maximum smoothness
+Gam_vec = 1./factorial(0:d); %\Gamma (order wts) for approximated function
+Gam_vec_tr = 1./factorial(0:d); %\Gamma (order wts) for true function
+w_vec = 1./((1:d).^2); %w (product wts) if known for approximated function
+w_vec_tr = 1./((1:d).^2); %w (product wts) for true function
+s_max = 5; %maximum smoothness for approximated function
+s_max_tr = s_max; %maximum smoothness for true function, I think that this has to be the same
 s_vec = 1./(( (0:s_max) +1).^2); %s (smoothness wts)
+s_vec_tr = 1./(( (0:s_max_tr) +1).^2); %s (smoothness wts)
 gam_mtx = permn(0:s_max,d); %compute this just once for all
-nBasis = size(gam_mtx,1) %number of basis elements
+nBasis = size(gam_mtx,1); %number of basis elements
 n_app = 2^14; %number of points to use for approximating L_inf norm
+%basisFun = @legendreBasis; %Legendre polynomials
+basisFun = @chebyshevBasis; %Chebyshev polynomials
 nm_flg = false; % do we know l-\infty norm?
 w_flg = false; % do we know product weights?
 rand_flg = true; % random +/- of Fourier coefficients?
 randCoordOrder_flg = false; %randomize the order of the weights
+if randCoordOrder_flg
+   w_vec_tr = w_vec_tr(randperm(d));
+end
 
 if ~w_flg
     w_vec = -1*ones(1,d); %set dummy weights if no flag
@@ -27,16 +36,6 @@ num_eps = 25; %no. of errors
 min_log10_eps = -4;
 max_log10_eps = -1;
 eps_vec = 10.^(linspace(min_log10_eps,max_log10_eps,num_eps))';
-
-% Fourier coef. setting for true f'n f
-Gam_vec_tr = 1./factorial(0:d); %\Gamma (order wts)
-w_vec_tr = 1./((1:d).^2); %w (product wts)
-s_max_tr = 5; %maximum smoothness
-s_vec_tr = 1./(( (0:s_max_tr) +1).^2); %s (smoothness wts)
-if randCoordOrder_flg
-   w_vec_tr = w_vec_tr(randperm(d));
-end
-   
 
 C = 1.2; % inflation factor
 n0 = 3; % pilot sample
@@ -51,13 +50,10 @@ if rand_flg
    four_coef = rad_seq .* four_coef;
 end
 
-%gam_val = comp_wts(Gam_vec,w_vec,s_vec,gam_mtx);
-%[gam_val_rk,gam_idx] = sort(gam_val,'descend'); %sort for importance
-
 p = sobolset(d);
 p = scramble(p,'MatousekAffineOwen');
 sob_pts = 2*net(p,n_app) - 1; %stretch to fill the cube [-1,1]^d
-[f_true,basisVal,p_val] = eval_f_four(sob_pts,@legendreBasis,gam_mtx,s_max,four_coef);
+[f_true,basisVal,p_val] = eval_f_four(sob_pts,basisFun,gam_mtx,s_max,four_coef);
 
 %% Run algorithm for different error tolerances
 
