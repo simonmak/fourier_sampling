@@ -22,7 +22,7 @@ basisFun = @chebyshevBasis; %Chebyshev polynomials
 nm_flg = false; % do we know l-\infty norm?
 w_flg = false; % do we know product weights?
 rand_flg = true; % random +/- of Fourier coefficients?
-randCoordOrder_flg = false; %randomize the order of the weights
+randCoordOrder_flg = true; %randomize the order of the weights
 if randCoordOrder_flg
    w_vec_tr = w_vec_tr(randperm(d));
 end
@@ -36,6 +36,7 @@ num_eps = 25; %no. of errors
 min_log10_eps = -4;
 max_log10_eps = -1;
 eps_vec = 10.^(linspace(min_log10_eps,max_log10_eps,num_eps))';
+eps_vec = flipud(eps_vec); %so that we visualize the smallest tolerance
 
 C = 1.2; % inflation factor
 n0 = 3; % pilot sample
