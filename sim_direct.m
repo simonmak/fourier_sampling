@@ -62,7 +62,7 @@ n_vec(num_eps,1)=0; %container for sample sizes
 
 f_app(n_app,1) = 0;
 for m = 1:length(eps_vec)
-   %m
+    %m
     
     % Algorithm:
     % 1) Compute sample size nn:
@@ -71,12 +71,10 @@ for m = 1:length(eps_vec)
     [gam_val_rk,gam_idx] = sort(gam_val,'descend'); 
     n_vec(m) = nn;
 
-    % 2) Compute true error between f and f_app
-    
+    % 2) Compute true error between f and f_app    
     %evaluate f_app
     [f_app,basisVal] = ...
-       eval_f_four([],basisVal,gam_mtx(gam_idx(1:nn),:),s_max,four_coef(gam_idx(1:nn)));
-    
+       eval_f_four([],basisVal,gam_mtx(gam_idx(1:nn),:),s_max,four_coef(gam_idx(1:nn))); 
     %Record true error
     err_vec(m) = max(abs(f_true - f_app));
 
