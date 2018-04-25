@@ -6,11 +6,14 @@ InitializeDisplay %add some variables for nice plotting
 
 figure
 log10epsVec = log10(eps_vec);
-scatter(rat_vec,n_vec,800,log10epsVec,'.'); %plot ratio of actual error to tolerance, with color corresonding to tolerance
+h = scatter(rat_vec,n_vec,800,log10epsVec,'.'); %plot ratio of actual error to tolerance, with color corresonding to tolerance
+hold on
+h = [h; scatter(rat_four_eps_vec,n_vec,300,log10epsVec,'x','linewidth',4)]; %ratio of L^1 error of four_coef to tolerance
+h = [h; scatter(rat_normf_eps_vec,n_vec,300,log10epsVec,'+','linewidth',4)]; %ratio of L^1 error of gamma to tolerance
 set(gca,'YScale','log')
 xlim([0 max([rat_vec*1.2;1])])
 ylim(10.^[floor(log10(min(n_vec))) ceil(log10(max(n_vec)))])
-xlabel({'\(||f-\hat{f}||_{\infty}/\varepsilon\)'})
+%xlabel({'\(||f-\hat{f}||_{\infty}/\varepsilon\)'})
 ylabel({'Sample size \(n\)'})
 hcb = colorbar; %showing tolerance values
 title(hcb,'\(\varepsilon\)','interpreter','latex')
@@ -18,6 +21,11 @@ tickVals = floor(min_log10_eps:max_log10_eps);
 tickLabels = 10.^tickVals;
 set(hcb,'Ticks',tickVals,'TickLabels',tickLabels, ...
    'Limits',[tickVals(1) tickVals(end)])
+hl = legend(h,{'\(||f-f_{\mbox{app}}||_{\infty}/\varepsilon\)', ...
+   '\(||\hat{f} - \hat{f}_{\mbox{app}}||_{1}/\varepsilon\)', ...
+   '\(||\hat{f}||_{\infty,}\)\boldmath\({}_\gamma\)\unboldmath\(||\bigl(\gamma(\)\boldmath\(j\)\unboldmath\({}_i) \bigr)_{i > n}||_{1}/\varepsilon\)'}, ...
+   'box','off','location','northoutside','orientation','horizontal');
+%legend boxoff
 
 %% Visualize (only a 2-d projection)
 [~,whCoordBig] = sort(w_est);

@@ -1,4 +1,4 @@
-function [nn,gam_val,w_est,samp_idx] = samp_sz(four_coef,Gam_vec,w_vec,s_vec,gam_mtx,p_val,epsTol,C,n0,samp_idx,nm_flg,w_flg)
+function [nn,gam_val,w_est,gam_idx,f_hat_nm] = samp_sz(four_coef,Gam_vec,w_vec,s_vec,gam_mtx,p_val,epsTol,C,n0,samp_idx,nm_flg,w_flg)
     
     % Computes sample size given desired error tolerance eps
     % - four_coef : true fourier coefficients
@@ -73,7 +73,7 @@ function [nn,gam_val,w_est,samp_idx] = samp_sz(four_coef,Gam_vec,w_vec,s_vec,gam
                
         %Update gamma with estimated product weights
         gam_val = comp_wts(Gam_vec,w_est,s_vec,gam_mtx);
-        gam_val_rk = sort(gam_val,'descend');
+        [gam_val_rk,gam_idx] = sort(gam_val,'descend');
 
         %Compute sample size
         f_hat_nm = C * max(abs(four_coef(samp_idx)) .* p_val(samp_idx) ./ gam_val(samp_idx) ); % approx. f_hat
