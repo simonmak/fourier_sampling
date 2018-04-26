@@ -21,10 +21,16 @@ tickVals = floor(min_log10_eps:max_log10_eps);
 tickLabels = 10.^tickVals;
 set(hcb,'Ticks',tickVals,'TickLabels',tickLabels, ...
    'Limits',[tickVals(1) tickVals(end)])
-hl = legend(h,{'\(||f-f_{\mbox{app}}||_{\infty}/\varepsilon\)', ...
+[hl,leg_icons] = legend(h,{'\(||f-f_{\mbox{app}}||_{\infty}/\varepsilon\)', ...
    '\(||\hat{f} - \hat{f}_{\mbox{app}}||_{1}/\varepsilon\)', ...
    '\(||\hat{f}||_{\infty,}\)\boldmath\({}_\gamma\)\unboldmath\(||\bigl(\gamma(\)\boldmath\(j\)\unboldmath\({}_i) \bigr)_{i > n}||_{1}/\varepsilon\)'}, ...
-   'box','off','location','northoutside','orientation','horizontal');
+   'box','off','location','south','orientation','horizontal');
+set(gcf,'Position',[200,200,1000,500]) %make figure big enough
+leg_icons(4).Children.MarkerSize = 30;
+leg_icons(5).Children.MarkerSize = 20;
+leg_icons(6).Children.MarkerSize = 20;
+leg_icons(5).Children.LineWidth = 4;
+leg_icons(6).Children.LineWidth = 4;
 %legend boxoff
 
 %% Visualize (only a 2-d projection)
