@@ -2,22 +2,36 @@
 clearvars
 
 load sim_direct_results.mat %load results for plotting
-% InitializeDisplay %add some variables for nice plotting
+InitializeDisplay %add some variables for nice plotting
 
 figure
 log10epsVec = log10(eps_vec);
-scatter(rat_vec,n_vec,800,log10epsVec,'.'); %plot ratio of actual error to tolerance, with color corresonding to tolerance
+h = scatter(rat_vec,n_vec,800,log10epsVec,'.'); %plot ratio of actual error to tolerance, with color corresonding to tolerance
+hold on
+h = [h; scatter(rat_four_eps_vec,n_vec,300,log10epsVec,'x','linewidth',4)]; %ratio of L^1 error of four_coef to tolerance
+h = [h; scatter(rat_normf_eps_vec,n_vec,300,log10epsVec,'+','linewidth',4)]; %ratio of L^1 error of gamma to tolerance
 set(gca,'YScale','log')
 xlim([0 max([rat_vec*1.2;1])])
 ylim(10.^[floor(log10(min(n_vec))) ceil(log10(max(n_vec)))])
-% xlabel({'\(||f-\hat{f}||_{\infty}/\varepsilon\)'})
-% ylabel({'Sample size \(n\)'})
-% hcb = colorbar; %showing tolerance values
-% title(hcb,'\(\varepsilon\)','interpreter','latex')
-% tickVals = floor(min_log10_eps:max_log10_eps);
-% tickLabels = 10.^tickVals;
-% set(hcb,'Ticks',tickVals,'TickLabels',tickLabels, ...
-%    'Limits',[tickVals(1) tickVals(end)])
+%xlabel({'\(||f-\hat{f}||_{\infty}/\varepsilon\)'})
+ylabel({'Sample size \(n\)'})
+hcb = colorbar; %showing tolerance values
+title(hcb,'\(\varepsilon\)','interpreter','latex')
+tickVals = floor(min_log10_eps:max_log10_eps);
+tickLabels = 10.^tickVals;
+set(hcb,'Ticks',tickVals,'TickLabels',tickLabels, ...
+   'Limits',[tickVals(1) tickVals(end)])
+[~,leg_icons] = legend(h,{'\(||f-f_{\mbox{app}}||_{\infty}/\varepsilon\) \quad', ...
+   '\(||\hat{f} - \hat{f}_{\mbox{app}}||_{1}/\varepsilon\)\quad', ...
+   '\(||\hat{f}||_{\infty,}\)\boldmath\({}_\gamma\)\unboldmath\(||\bigl(\gamma(\)\boldmath\(j\)\unboldmath\({}_i) \bigr)_{i > n}||_{1}/\varepsilon\)'}, ...
+   'box','off','location','south','orientation','horizontal');
+set(gcf,'Position',[200,200,1000,500]) %make figure big enough and the right aspect ratio
+leg_icons(4).Children.MarkerSize = 30; %make legend icons large enough
+leg_icons(5).Children.MarkerSize = 20;
+leg_icons(6).Children.MarkerSize = 20;
+leg_icons(5).Children.LineWidth = 4;
+leg_icons(6).Children.LineWidth = 4;
+%legend boxoff
 
 %% Visualize (only a 2-d projection)
 [~,whCoordBig] = sort(w_est);
@@ -40,28 +54,28 @@ figure
 rotate3d on
 f_true_Vis = reshape(f_true_Vis,[n_grd_val n_grd_val]);
 surf(x_grd,x_grd,f_true_Vis); shading interp
-% xlabel(['\(x_{' int2str(whCoordBig(1)) '}\)'])
-% ylabel(['\(x_{' int2str(whCoordBig(2)) '}\)'])
-% zlabel(['\(f(x_{' int2str(whCoordBig(1)) '}, x_{' int2str(whCoordBig(2)) ...
-%    '}, ' num2str(nom_Val) ', \ldots)\)'])
+xlabel(['\(x_{' int2str(whCoordBig(1)) '}\)'])
+ylabel(['\(x_{' int2str(whCoordBig(2)) '}\)'])
+zlabel(['\(f(x_{' int2str(whCoordBig(1)) '}, x_{' int2str(whCoordBig(2)) ...
+   '}, ' num2str(nom_Val) ', \ldots)\)'])
 
 figure
 rotate3d on
 f_app_Vis = reshape(f_app_Vis,[n_grd_val n_grd_val]);
 surf(x_grd,x_grd,f_app_Vis); shading interp
-% xlabel(['\(x_{' int2str(whCoordBig(1)) '}\)'])
-% ylabel(['\(x_{' int2str(whCoordBig(2)) '}\)'])
-% zlabel(['\(f_{\mbox{app}}(x_{' int2str(whCoordBig(1)) '}, x_{' int2str(whCoordBig(2)) ...
-%    '}, ' num2str(nom_Val) ', \ldots)\)'])
+xlabel(['\(x_{' int2str(whCoordBig(1)) '}\)'])
+ylabel(['\(x_{' int2str(whCoordBig(2)) '}\)'])
+zlabel(['\(f_{\mbox{app}}(x_{' int2str(whCoordBig(1)) '}, x_{' int2str(whCoordBig(2)) ...
+   '}, ' num2str(nom_Val) ', \ldots)\)'])
 
 figure
 rotate3d on
 err_Vis = f_true_Vis - f_app_Vis;
 surf(x_grd,x_grd,err_Vis); shading interp
-% xlabel(['\(x_{' int2str(whCoordBig(1)) '}\)'])
-% ylabel(['\(x_{' int2str(whCoordBig(2)) '}\)'])
-% zlabel(['\(\mbox{err}(x_{' int2str(whCoordBig(1)) '}, x_{' int2str(whCoordBig(2)) ...
-%    '}, ' num2str(nom_Val) ', \ldots)\)'])
+xlabel(['\(x_{' int2str(whCoordBig(1)) '}\)'])
+ylabel(['\(x_{' int2str(whCoordBig(2)) '}\)'])
+zlabel(['\(\mbox{err}(x_{' int2str(whCoordBig(1)) '}, x_{' int2str(whCoordBig(2)) ...
+   '}, ' num2str(nom_Val) ', \ldots)\)'])
 
 figure(1)
 
