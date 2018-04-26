@@ -1,4 +1,4 @@
-function [nn,gam_val,w_est,gam_idx,f_hat_nm] = samp_sz(four_coef,Gam_vec,w_vec,s_vec,gam_mtx,p_val,epsTol,C,n0,samp_idx,nm_flg,w_flg)
+function [nn,gam_val,w_est,samp_idx] = samp_sz(four_coef,Gam_vec,w_vec,s_vec,gam_mtx,p_val,epsTol,C,n0,samp_idx,nm_flg,w_flg,gam_val)
     
     % Computes sample size given desired error tolerance eps
     % - four_coef : true fourier coefficients
@@ -38,7 +38,9 @@ function [nn,gam_val,w_est,gam_idx,f_hat_nm] = samp_sz(four_coef,Gam_vec,w_vec,s
     elseif w_flg %do if we know weights (but not norm)...
         
         % Rank gamma from largest to smallest
-        gam_val = comp_wts(Gam_vec,w_vec,s_vec,gam_mtx);
+        if isempty(gam_val)
+            gam_val = comp_wts(Gam_vec,w_vec,s_vec,gam_mtx);
+        end
         [gam_val_rk,gam_idx] = sort(gam_val,'descend'); 
         
         % Pick indices with largest n0 weights
@@ -58,11 +60,15 @@ function [nn,gam_val,w_est,gam_idx,f_hat_nm] = samp_sz(four_coef,Gam_vec,w_vec,s
               & max(gam_mtx,[],2) <= n0); %largest wavenumber is small enough
            nSamp_idx = size(samp_idx,1);
            [whCoord,~] = ind2sub([d,nSamp_idx],find(gam_mtx(samp_idx,:)' ~= 0));
+        else
+           samp_idx(samp_idx==1) = []; %remove intercept (if in samp_idx)
+           nSamp_idx = size(samp_idx,1);
+           [whCoord,~] = ind2sub([d,nSamp_idx],find(gam_mtx(samp_idx,:)' ~= 0));
         end
         
         %Estimate product weights
         fpOvers = abs(four_coef(samp_idx)).* p_val(samp_idx) ...
-           ./ s_vec(gam_mtx(sub2ind([nBasis d],samp_idx, whCoord)));
+           ./ (s_vec(gam_mtx(sub2ind([nBasis d],samp_idx, whCoord))))';
         uell = zeros(1,d);
         for ell = 1:d
            uell(ell) = max(fpOvers(whCoord == ell));
@@ -73,7 +79,7 @@ function [nn,gam_val,w_est,gam_idx,f_hat_nm] = samp_sz(four_coef,Gam_vec,w_vec,s
                
         %Update gamma with estimated product weights
         gam_val = comp_wts(Gam_vec,w_est,s_vec,gam_mtx);
-        [gam_val_rk,gam_idx] = sort(gam_val,'descend');
+        gam_val_rk = sort(gam_val,'descend');
 
         %Compute sample size
         f_hat_nm = C * max(abs(four_coef(samp_idx)) .* p_val(samp_idx) ./ gam_val(samp_idx) ); % approx. f_hat
