@@ -1,4 +1,4 @@
-function [nn,gam_val,w_est,gam_idx,f_hat_nm] = samp_sz(four_coef,Gam_vec,w_vec,s_vec,gam_mtx,p_val,epsTol,C,n0,samp_idx,nm_flg,w_flg)
+function [nn,gam_val,w_est,gam_idx,f_hat_nm] = samp_sz(four_coef,Gam_vec,w_vec,s_vec,gam_mtx,p_val,epsTol,C,n0,samp_idx,nm_flg,w_flg,gam_val)
     
     % Computes sample size given desired error tolerance eps
     % - four_coef : true fourier coefficients
@@ -38,7 +38,9 @@ function [nn,gam_val,w_est,gam_idx,f_hat_nm] = samp_sz(four_coef,Gam_vec,w_vec,s
     elseif w_flg %do if we know weights (but not norm)...
         
         % Rank gamma from largest to smallest
-        gam_val = comp_wts(Gam_vec,w_vec,s_vec,gam_mtx);
+        if isempty(gam_val)
+            gam_val = comp_wts(Gam_vec,w_vec,s_vec,gam_mtx);
+        end
         [gam_val_rk,gam_idx] = sort(gam_val,'descend'); 
         
         % Pick indices with largest n0 weights
@@ -56,6 +58,10 @@ function [nn,gam_val,w_est,gam_idx,f_hat_nm] = samp_sz(four_coef,Gam_vec,w_vec,s
         if isempty(samp_idx)
            samp_idx = find(sum(gam_mtx ~= 0,2) == 1 ... %just one nonzero element in row
               & max(gam_mtx,[],2) <= n0); %largest wavenumber is small enough
+           nSamp_idx = size(samp_idx,1);
+           [whCoord,~] = ind2sub([d,nSamp_idx],find(gam_mtx(samp_idx,:)' ~= 0));
+        else
+           samp_idx(samp_idx==1) = []; %remove intercept (if in samp_idx)
            nSamp_idx = size(samp_idx,1);
            [whCoord,~] = ind2sub([d,nSamp_idx],find(gam_mtx(samp_idx,:)' ~= 0));
         end
