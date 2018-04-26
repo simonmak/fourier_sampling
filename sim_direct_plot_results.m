@@ -10,8 +10,9 @@ h = scatter(rat_vec,n_vec,800,log10epsVec,'.'); %plot ratio of actual error to t
 hold on
 h = [h; scatter(rat_four_eps_vec,n_vec,300,log10epsVec,'x','linewidth',4)]; %ratio of L^1 error of four_coef to tolerance
 h = [h; scatter(rat_normf_eps_vec,n_vec,300,log10epsVec,'+','linewidth',4)]; %ratio of L^1 error of gamma to tolerance
-set(gca,'YScale','log')
-xlim([0 max([rat_vec*1.2;1])])
+set(gca,'XScale','log', 'YScale','log')
+xlim([min([[rat_vec; rat_four_eps_vec; rat_normf_eps_vec]*0.8; 0.1]) ...
+ max([[rat_vec; rat_four_eps_vec; rat_normf_eps_vec]*1.2; 1])])
 ylim(10.^[floor(log10(min(n_vec))) ceil(log10(max(n_vec)))])
 %xlabel({'\(||f-\hat{f}||_{\infty}/\varepsilon\)'})
 ylabel({'Sample size \(n\)'})
