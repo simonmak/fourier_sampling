@@ -5,9 +5,10 @@
 %% Simulation settings
 close all
 clearvars
-func = @(xx) chsan10(xx);
-func_str = 'chsan10';
 d = 2;     %dimension
+domain = [-1;1]*ones(1,d);
+func = @(xx) chsan10(xx,domain);
+func_str = 'chsan10';
 Gam_vec = 1./factorial(0:d); %\Gamma (order wts) for approximated function
 s_max = 10; %maximum smoothness for approximated function
 s_vec = 1./(( (0:s_max) +1).^2); %s (smoothness wts) for approximated function
@@ -18,7 +19,7 @@ basisFun = @legendreBasis; %Legendre polynomials
 %basisFun = @chebyshevBasis; %Chebyshev polynomials
 ac_flg = true; %arc-cos flag
 C = 1.5; % inflation factor
-n0 = s_max; % pilot sample
+n0 = 3; % pilot sample
 
 w_vec = -1*ones(d,1); %dummy product weights (this is not known)
 
@@ -32,33 +33,26 @@ eps_vec = flipud(eps_vec); %so that we visualize the smallest tolerance
 %% Set initial design and estimate Fourier coefficients
 % Set desired sampling indices J for initial design
 gam_mtx = permn(0:s_max,d);
-gam_idx = zeros(1,d);
-for (j = 1:d)
-    for (k = 1:n0)
-        vc = zeros(1,d);
-        vc(j) = k;
-        gam_idx = [gam_idx; vc];
-    end
-end
-[~,samp_idx_ini] = ismember(gam_idx,gam_mtx,'rows'); %1-d sampling indices
-no_pts = size(gam_idx,1);
+samp_idx_ini = find(sum(gam_mtx ~= 0,2) <= 1 ... %no more than one nonzero element in row
+  & max(gam_mtx,[],2) <= n0); %largest wavenumber is small enough
+no_pts = size(samp_idx_ini,1);
+[whCoord,~] = ind2sub([d,no_pts],find(gam_mtx(samp_idx_ini,:)' ~= 0));
+gam_idx = gam_mtx(samp_idx_ini,:);
 
 % Compute design and collect response
 DD_ini = vdcorput_sg(gam_idx,2,ac_flg);
-yy_ini = zeros(no_pts,1);
-for (i = 1:no_pts)
-    yy_ini(i) = func(DD_ini(i,:));
-end
+yy_ini = func(DD_ini);
 % scatter(DD_ini(:,1),DD_ini(:,2)) %visualize in 2d
 
 % Estimate Fourier coefficients via interpolation
-four_coef = zeros(size(gam_mtx,1),1); %dummy vector -- we just want basisVal
-[~,basisVal_ini,p_val] = eval_f_four(DD_ini,basisFun,gam_mtx,s_max,four_coef);
-XX = eval_X_four(basisVal_ini,gam_mtx(samp_idx_ini,:));
+% [basisVal,nX,d] = eval_Basis(x,basisFun,s_max);
+% four_coef(nBasis,1) = 0; %dummy vector -- we just want basisVal
+% [~,basisVal_ini] = eval_f_four(DD_ini,basisFun,gam_mtx,s_max,four_coef);
+[XX,basisVal_ini] = eval_X_four(DD_ini,basisFun,gam_idx,s_max);
 
-fhat = (XX'*XX)\(XX'*yy_ini);
-four_coef_est_ini = zeros(size(gam_mtx,1),1);
-four_coef_est_ini(samp_idx_ini) = fhat;
+fhat = XX\yy_ini; %least squares solution for fourier coefficients
+four_coef_est_ini = zeros(nBasis,1);
+four_coef_est_ini(samp_idx_ini) = fhat; %initial Fourier coefficient estimates
 % yy - XX*fhat %check interpolation
 % cond(XX'*XX) %check cond'n number
 
@@ -66,31 +60,32 @@ four_coef_est_ini(samp_idx_ini) = fhat;
 p = sobolset(d);
 p = scramble(p,'MatousekAffineOwen');
 sob_pts = 2*net(p,n_app) - 1; %stretch to fill the cube [-1,1]^d
-four_coef = zeros(size(gam_mtx,1),1); %dummy vector -- we just want basisVal
-[~,basisValTest,~] = eval_f_four(sob_pts,basisFun,gam_mtx,s_max,four_coef);
+f_true = func(sob_pts);
+%four_coef = zeros(size(gam_mtx,1),1); %dummy vector -- we just want basisVal
+basisValTest = eval_Basis(sob_pts,basisFun,s_max);
 %test
 % XX_test = eval_X_four(basisValTest,gam_mtx(samp_idx,:));
 
 %% Run algorithm for different error tolerances
-err_vec = zeros(length(eps_vec),1); %container for errors
-n_vec = zeros(length(eps_vec),1); %container for sample sizes
-cur_n_ini = no_pts;
+err_vec(length(eps_vec),1) = 0; %container for errors
+n_vec(length(eps_vec),1) = 0; %container for sample sizes
+%cur_n_ini = no_pts;
 
-for (m = 1:length(eps_vec))
+for m = 1:length(eps_vec)
     m
     
     % Algorithm:
     % 1) Sequentially observe function to satisfy (approximate) bound:
     samp_idx = samp_idx_ini; %load initial data
     four_coef_est = four_coef_est_ini;
-    cur_n = cur_n_ini;
+    cur_n = no_pts;
     basisVal = basisVal_ini;
     DD = DD_ini;
     yy = yy_ini;
     
     % sample size from pilot sample
     [n_bd,gam_val_est,w_est,~] = samp_sz(four_coef_est,Gam_vec,w_vec,s_vec,gam_mtx, ...
-       p_val,eps_vec(m),C,n0,samp_idx,false,false,[]);
+       eps_vec(m),C,n0,samp_idx,false,false,[]);
     
     gam_tmp = gam_val_est; % rank remaining indices
     gam_tmp(samp_idx) = 0;  
@@ -106,31 +101,32 @@ for (m = 1:length(eps_vec))
         samp_idx = [samp_idx; new_idx];
         gam_idx = [gam_idx; gam_mtx(new_idx,:)];
         %observe new sample
-        no_pts = no_pts + 1;
+        %no_pts = no_pts + 1;
+        cur_n = cur_n + 1;        
         new_DD = vdcorput_sg(gam_mtx(new_idx,:),2,ac_flg);
         DD = [DD; new_DD];
         yy = [yy; func(new_DD)];
-        cur_n = cur_n + 1;
+        
         %recompute Fourier estimates
         basisVal = eval_f_four_add(new_DD,basisVal,basisFun,gam_mtx,s_max);
 %         [~,basisVal,~] = eval_f_four(DD,basisFun,gam_mtx,s_max,four_coef);
-        XX = eval_X_four(basisVal,gam_mtx(samp_idx,:));
-        fhat = (XX'*XX)\(XX'*yy);
+        XX = eval_X_four([],basisVal,gam_mtx(samp_idx,:));
+        fhat = XX\yy; %least squares solution
         four_coef_est = zeros(size(gam_mtx,1),1);
         four_coef_est(samp_idx) = fhat;
         %recompute sample size bound
         [n_bd,gam_val_est,w_est,~] = samp_sz(four_coef_est,Gam_vec,w_est,s_vec,gam_mtx, ...
-            p_val,eps_vec(m),C,n0,samp_idx,false,true,gam_val_est);
+            eps_vec(m),C,n0,samp_idx,false,true,gam_val_est);
     end
     
     n_vec(m) = cur_n;
 
     % 2) Compute true error between f and f_app    
-    %evaluate function f
-    f_true = zeros(n_app,1);
-    for (i = 1:n_app)
-        f_true(i) = func(sob_pts(i,:));
-    end
+%     %evaluate function f
+%     f_true = zeros(n_app,1);
+%     for (i = 1:n_app)
+%         f_true(i) = func(sob_pts(i,:));
+%     end
     %construct approximation f_app
     [f_app,basisVal] = ...
        eval_f_four([],basisValTest,gam_mtx(samp_idx,:),s_max,four_coef_est(samp_idx)); 
@@ -148,9 +144,11 @@ end
 rat_vec = err_vec./eps_vec; %sample size vs error ratios
 
 % save (except large variables)
-varRem = {'XX','rem_gam_idx','p_val','gam_tmp','gam_val_est','four_coef_est_ini'};
+varRem = {'XX','rem_gam_idx','gam_tmp','gam_val_est','four_coef_est_ini'};
 clear(varRem{:})
 save(['sim_eval_results_' func_str '_ac' int2str(ac_flg) '.mat'])
+
+sim_eval_plot_results
 
 % save(['sim_eval_results_' func_str '_ac' int2str(ac_flg) '.mat']) %save results to plot later
 

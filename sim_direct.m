@@ -54,7 +54,7 @@ end
 p = sobolset(d);
 p = scramble(p,'MatousekAffineOwen');
 sob_pts = 2*net(p,n_app) - 1; %stretch to fill the cube [-1,1]^d
-[f_true,basisVal,p_val] = eval_f_four(sob_pts,basisFun,gam_mtx,s_max,four_coef);
+[f_true,basisVal] = eval_f_four(sob_pts,basisFun,gam_mtx,s_max,four_coef);
 
 %% Run algorithm for different error tolerances
 
@@ -70,7 +70,7 @@ for m = 1:length(eps_vec)
     % Algorithm:
     % 1) Compute sample size nn:
     [nn,gam_val,w_est,gam_idx,f_hat_nm] = samp_sz(four_coef,Gam_vec,w_vec,s_vec,gam_mtx, ...
-       p_val,eps_vec(m),C,n0,[],nm_flg,w_flg);
+       eps_vec(m),C,n0,[],nm_flg,w_flg);
 %    [gam_val_rk,gam_idx] = sort(gam_val,'descend'); 
     wh_gam_in = gam_idx(1:nn);
     wh_gam_out = gam_idx(nn+1:nBasis);
@@ -82,7 +82,7 @@ for m = 1:length(eps_vec)
        eval_f_four([],basisVal,gam_mtx(wh_gam_in,:),s_max,four_coef(wh_gam_in)); 
     %Record true error
     err_vec(m) = max(abs(f_true - f_app));
-    four_ignored(m) = sum(abs(four_coef(wh_gam_out) .* p_val(wh_gam_out)));
+    four_ignored(m) = sum(abs(four_coef(wh_gam_out)));
     normf_gamma_ignored(m) = f_hat_nm*sum(abs(gam_val(wh_gam_out)));
 
 end

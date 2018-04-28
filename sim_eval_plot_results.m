@@ -1,7 +1,7 @@
 %%Plot results
 clearvars
 
-func_str = 'otlcircuit'; %function string
+func_str = 'chsan10'; %function string
 ac_flg = 1; %arc-cos flag
 load(['sim_eval_results_' func_str '_ac' int2str(ac_flg) '.mat']) %save results to plot later %load results for plotting
 InitializeDisplay %add some variables for nice plotting
@@ -35,13 +35,14 @@ n_Vis = n_grd_val.^2;
 x_Vis = nom_Val*ones(n_Vis,d);
 x_Vis(:,xcoord) = xx(:);
 x_Vis(:,ycoord) = yy(:);
-f_true_Vis = zeros(size(x_Vis,1),1);
-for (i = 1:size(x_Vis,1))
-    f_true_Vis(i) = func(x_Vis(i,:));
-end
-[~,basisVal] = eval_f_four(x_Vis,basisFun,gam_mtx,s_max,four_coef);
+f_true_Vis = func(x_Vis);
+% zeros(size(x_Vis,1),1);
+% for i = 1:size(x_Vis,1)
+%     f_true_Vis(i) = func(x_Vis(i,:));
+% end
+%[~,basisVal] = eval_f_four(x_Vis,basisFun,gam_mtx,s_max,four_coef);
 [f_app_Vis] = ...
-       eval_f_four([],basisVal,gam_mtx(samp_idx,:),s_max,four_coef_est(samp_idx));
+       eval_f_four(x_Vis,basisFun,gam_mtx(samp_idx,:),s_max,four_coef_est(samp_idx));
 zl = [min([f_app_Vis; f_true_Vis]) max([f_app_Vis; f_true_Vis]) ]; %zlims
    
 figure

@@ -1,4 +1,6 @@
-function [y] = chsan10(xx)
+function [y] = chsan10(xx,domain)
+
+% Modifed by Hickernell
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
@@ -28,16 +30,16 @@ function [y] = chsan10(xx)
 %
 % INPUT:
 %
-% xx = [x1, x2]
+% xx = [x1, ..., xd]
+% domain =  domain
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-x1 = (xx(1)/2+0.5);
-x2 = (xx(2)/2+0.5);
+xTrans = (xx - domain(1,:))./diff(domain,1,1);
 
-fact1 = cos(x1 + x2);
-fact2 = exp(x1*x2);
+fact1 = cos(sum(xTrans,2));
+fact2 = exp(prod(xTrans,2));
 
-y = fact1 * fact2;
+y = fact1 .* fact2;
 
 end

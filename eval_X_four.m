@@ -1,8 +1,12 @@
-function [XX,basisVal,pVal] = eval_X_four(basisVal,waveNum)
-% Evaluate model matrix X based on pre-computed basisVal
+function [XX,basisVal] = eval_X_four(x,basisVal,waveNum,s_max)
+% Evaluate model matrix X at points x
 nBasis = size(waveNum,1);
-[nX,d,~] = size(basisVal);
-pVal = [];
+if isa(basisVal,'function_handle') %Don't yet have basis tablulated at x
+   basisFun = basisVal;
+   [basisVal,nX,d] = eval_Basis(x,basisFun,s_max);
+else
+   [nX,d,~] = size(basisVal);
+end
 
 XX = zeros(nX,nBasis);
 for j = 1:nBasis
@@ -12,3 +16,4 @@ for j = 1:nBasis
    end
    XX(:,j) = addPart;
 end
+
