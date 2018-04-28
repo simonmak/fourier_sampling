@@ -39,7 +39,7 @@ eps_vec = 10.^(linspace(min_log10_eps,max_log10_eps,num_eps))';
 eps_vec = flipud(eps_vec); %so that we visualize the smallest tolerance
 
 C = 1.2; % inflation factor
-n0 = 3; % pilot sample
+n0 = 3; % pilot sample in each coordinate
 
 %% Compute true function
 
@@ -71,7 +71,6 @@ for m = 1:length(eps_vec)
     % 1) Compute sample size nn:
     [nn,gam_val,w_est,gam_idx,f_hat_nm] = samp_sz(four_coef,Gam_vec,w_vec,s_vec,gam_mtx, ...
        eps_vec(m),C,n0,[],nm_flg,w_flg);
-%    [gam_val_rk,gam_idx] = sort(gam_val,'descend'); 
     wh_gam_in = gam_idx(1:nn);
     wh_gam_out = gam_idx(nn+1:nBasis);
     n_vec(m) = nn;

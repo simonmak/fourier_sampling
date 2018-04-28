@@ -1,10 +1,6 @@
 function [basisVal] = eval_f_four_add(xnew,basisVal,basisFun,waveNum,s_max)
 % Adds polynomial evaluations for a new design point xnew
-%nBasis = size(waveNum,1);
-% [nX,d] = size(x);
 d = length(xnew);
-%[nX,~,~] = size(basisVal); %add +1 to design size
-%nX = nX + 1;
 
 newSlice = zeros(1,d,s_max+1); %initialize new slice to add to basisVal
 newSlice(1,:,1) = 1; %first value is always the constant one

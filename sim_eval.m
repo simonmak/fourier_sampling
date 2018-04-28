@@ -11,7 +11,7 @@ func = @(xx) chsan10(xx,domain);
 func_str = 'chsan10';
 Gam_vec = 1./factorial(0:d); %\Gamma (order wts) for approximated function
 s_max = 10; %maximum smoothness for approximated function
-s_vec = 1./(( (0:s_max) +1).^2); %s (smoothness wts) for approximated function
+s_vec = 1./(( (0:s_max) +1).^4); %s (smoothness wts) for approximated function
 gam_mtx = permn(0:s_max,d); %compute this just once for all
 nBasis = size(gam_mtx,1); %number of basis elements
 n_app = 2^14; %number of points to use for approximating L_inf norm
@@ -37,22 +37,19 @@ samp_idx_ini = find(sum(gam_mtx ~= 0,2) <= 1 ... %no more than one nonzero eleme
   & max(gam_mtx,[],2) <= n0); %largest wavenumber is small enough
 no_pts = size(samp_idx_ini,1);
 [whCoord,~] = ind2sub([d,no_pts],find(gam_mtx(samp_idx_ini,:)' ~= 0));
-gam_idx = gam_mtx(samp_idx_ini,:);
+gam_ini = gam_mtx(samp_idx_ini,:);
 
 % Compute design and collect response
-DD_ini = vdcorput_sg(gam_idx,2,ac_flg);
+DD_ini = vdcorput_sg(gam_ini,2,ac_flg);
 yy_ini = func(DD_ini);
 % scatter(DD_ini(:,1),DD_ini(:,2)) %visualize in 2d
 
 % Estimate Fourier coefficients via interpolation
-% [basisVal,nX,d] = eval_Basis(x,basisFun,s_max);
-% four_coef(nBasis,1) = 0; %dummy vector -- we just want basisVal
-% [~,basisVal_ini] = eval_f_four(DD_ini,basisFun,gam_mtx,s_max,four_coef);
-[XX,basisVal_ini] = eval_X_four(DD_ini,basisFun,gam_idx,s_max);
-
+[XX,basisVal_ini] = eval_X_four(DD_ini,basisFun,gam_ini,s_max);
 fhat = XX\yy_ini; %least squares solution for fourier coefficients
 four_coef_est_ini = zeros(nBasis,1);
 four_coef_est_ini(samp_idx_ini) = fhat; %initial Fourier coefficient estimates
+XX_ini = XX;
 % yy - XX*fhat %check interpolation
 % cond(XX'*XX) %check cond'n number
 
@@ -77,29 +74,31 @@ for m = 1:length(eps_vec)
     % Algorithm:
     % 1) Sequentially observe function to satisfy (approximate) bound:
     samp_idx = samp_idx_ini; %load initial data
-    four_coef_est = four_coef_est_ini;
-    cur_n = no_pts;
-    basisVal = basisVal_ini;
+    four_coef_est = four_coef_est_ini; %initial Fourier coefficient estimates
+    cur_n = no_pts; %number of points used so far
+    basisVal = basisVal_ini; %basis function values
     DD = DD_ini;
     yy = yy_ini;
+    XX = XX_ini;
     
-    % sample size from pilot sample
-    [n_bd,gam_val_est,w_est,~] = samp_sz(four_coef_est,Gam_vec,w_vec,s_vec,gam_mtx, ...
-       eps_vec(m),C,n0,samp_idx,false,false,[]);
+    % Compute w values and sample size from pilot sample
+    [n_bd,gam_val_est,w_est,~,~,errBd] = ...
+       samp_sz(four_coef_est,Gam_vec,w_vec,s_vec,gam_mtx, ...
+       eps_vec(m),C,n0,samp_idx,false,false);
     
     gam_tmp = gam_val_est; % rank remaining indices
     gam_tmp(samp_idx) = 0;  
     [~,rem_gam_idx] = sort(gam_tmp,'descend'); 
-    rem_gam_idx = rem_gam_idx(1:(length(rem_gam_idx)-length(samp_idx))); %remaining gamms indices to sample
+    rem_gam_idx = rem_gam_idx(1:end-no_pts); %remaining gamms indices to sample
     ct = 0; % counter for while loop
     
-    while (cur_n < n_bd) %... if sample size not enough, add largest unobserved gamma
+    while (errBd > eps_vec(m)) %... if sample size not enough, add largest unobserved gamma
         disp( ['m:' num2str(m) ' - ' num2str(cur_n) '/' num2str(n_bd) ] )
         ct = ct + 1;
         %find largest unobserved gamma
         new_idx = rem_gam_idx(ct);
         samp_idx = [samp_idx; new_idx];
-        gam_idx = [gam_idx; gam_mtx(new_idx,:)];
+        %gam_idx = [gam_idx; gam_mtx(new_idx,:)];
         %observe new sample
         %no_pts = no_pts + 1;
         cur_n = cur_n + 1;        
@@ -108,14 +107,15 @@ for m = 1:length(eps_vec)
         yy = [yy; func(new_DD)];
         
         %recompute Fourier estimates
-        basisVal = eval_f_four_add(new_DD,basisVal,basisFun,gam_mtx,s_max);
+        [basisVal,XX] = eval_X_add(new_DD,basisVal,XX,basisFun,gam_mtx(samp_idx,:),s_max);
 %         [~,basisVal,~] = eval_f_four(DD,basisFun,gam_mtx,s_max,four_coef);
-        XX = eval_X_four([],basisVal,gam_mtx(samp_idx,:));
+        %XX = eval_X_four([],basisVal,gam_mtx(samp_idx,:));
         fhat = XX\yy; %least squares solution
-        four_coef_est = zeros(size(gam_mtx,1),1);
+        four_coef_est = zeros(nBasis,1);
         four_coef_est(samp_idx) = fhat;
         %recompute sample size bound
-        [n_bd,gam_val_est,w_est,~] = samp_sz(four_coef_est,Gam_vec,w_est,s_vec,gam_mtx, ...
+        [n_bd,gam_val_est,w_est,~,f_norm,errBd] = ...
+           samp_sz(four_coef_est,Gam_vec,w_est,s_vec,gam_mtx, ...
             eps_vec(m),C,n0,samp_idx,false,true,gam_val_est);
     end
     
