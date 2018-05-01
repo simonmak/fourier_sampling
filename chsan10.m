@@ -1,4 +1,4 @@
-function [y] = chsan10(xx,domain)
+function [y] = chsan10(xx,domain,weights)
 
 % Modifed by Hickernell
 
@@ -31,14 +31,22 @@ function [y] = chsan10(xx,domain)
 % INPUT:
 %
 % xx = [x1, ..., xd]
-% domain =  domain
+% domain = domain
+% whActive = indices of active coordinates
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-xTrans = (xx - domain(1,:))./diff(domain,1,1);
+if nargin < 2
+   domain = [zeros(1,2); ones(1,2)]; %default domain
+end
+if nargin < 3
+   weights = ones(1,size(domain,2)); %default all coordinates active
+end
 
-fact1 = cos(sum(xTrans,2));
-fact2 = exp(prod(xTrans,2));
+xTrans = (xx - domain(1,:))./diff(domain,1,1); %transform to domain
+
+fact1 = cos(sum(xTrans .* weights,2));
+fact2 = exp(prod(xTrans .* weights,2));
 
 y = fact1 .* fact2;
 

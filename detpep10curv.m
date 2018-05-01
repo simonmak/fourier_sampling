@@ -1,5 +1,7 @@
 function [y] = detpep10curv(xx)
 
+%Modifed by Simon Mak to be on the domain [-1 1]
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % DETTE & PEPELYSHEV (2010) CURVED FUNCTION
@@ -32,13 +34,11 @@ function [y] = detpep10curv(xx)
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-x1 = 0.5*xx(1)+0.5;
-x2 = 0.5*xx(2)+0.5;
-x3 = 0.5*xx(3)+0.5;
+xNew = 0.5*xx+0.5; %transform from [-1,1]^3 to [0,1]^3
 
-term1 = 4 * (x1 - 2 + 8*x2 - 8*x2^2)^2;
-term2 = (3 - 4*x2)^2;
-term3 = 16 * sqrt(x3+1) * (2*x3-1)^2;
+term1 = 4 * (xNew(:,1) - 2 + 8*xNew(:,2) - 8*xNew(:,2).^2).^2;
+term2 = (3 - xNew(:,2)).^2;
+term3 = 16 * sqrt(xNew(:,3)+1) .* (2*xNew(:,3)-1).^2;
 
 y = term1 + term2 + term3;
 

@@ -35,7 +35,7 @@ function [nn,gam_val,w_est,gam_idx,f_hat_nm,errBd] = ...
 
       %Estimate product weights
       fpOvers = abs(four_coef(samp_idx)) ...
-         ./ s_vec(gam_mtx(sub2ind([nBasis d],samp_idx, whCoord)))';
+         ./ s_vec(1+gam_mtx(sub2ind([nBasis d],samp_idx, whCoord)))';
       uell = zeros(1,d);
       for ell = 1:d
          uell(ell) = max(fpOvers(whCoord == ell));

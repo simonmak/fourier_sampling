@@ -1,7 +1,8 @@
 %% Basis Pictures
 
+clearvars
 InitializeDisplay
-set(0,'defaultLineLineWidth',5) %thick lines
+set(0,'defaultLineLineWidth',6) %thick lines
 
 n1plot = 1e4;
 x1plot = -1:2/(n1plot-1):1;

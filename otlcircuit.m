@@ -1,5 +1,7 @@
 function [Vm] = otlcircuit(xx)
 
+%Modified by Fred Hickernell
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % OTL CIRCUIT FUNCTION
