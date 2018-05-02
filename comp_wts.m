@@ -7,11 +7,13 @@ function gam_val = comp_wts(Gam_vec,w_vec,s_vec,gam_mtx)
     % - s_max : maximum smoothness
 
     nBasis = size(gam_mtx,1);
-    gam_val(nBasis,1) = 0;
-    gam_val(1) = 1;
-    for i = 2:nBasis
+    gam_val = ones(nBasis,1);
+    for i = 1:nBasis
        act_idx = gam_mtx(i,:) > 0;
-       gam_val(i) = Gam_vec(nnz(gam_mtx(i,:))+1) .* prod(w_vec(act_idx) .* s_vec(gam_mtx(i,act_idx)+1));
+       if sum(act_idx)
+          gam_val(i) = Gam_vec(nnz(gam_mtx(i,:))+1) .* prod(w_vec(act_idx) ...
+             .* s_vec(gam_mtx(i,act_idx)+1));
+       end
     end
 
 end

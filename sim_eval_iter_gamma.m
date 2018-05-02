@@ -34,10 +34,6 @@ switch func_str
       return
 end
 
-
-
-gam_mtx = permn(0:s_max,d); %compute this just once for all
-nBasis = size(gam_mtx,1); %number of basis elements
 n_app = 2^14; %number of points to use for approximating L_inf norm
 %basisFun = @legendreBasis; %Legendre polynomials
 basisFun = @chebyshevBasis; %Chebyshev polynomials
@@ -56,24 +52,32 @@ eps_vec = flipud(eps_vec); %so that we visualize the smallest tolerance
 
 %% Set initial design and estimate Fourier coefficients
 % Set desired sampling indices J for initial design
-gam_mtx = permn(0:s_max,d);
-samp_idx_ini = find(sum(gam_mtx ~= 0,2) <= 1 ... %no more than one nonzero element in row
-  & max(gam_mtx,[],2) <= n0); %largest wavenumber is small enough
-no_pts = size(samp_idx_ini,1);
-[whCoord,~] = ind2sub([d,no_pts],find(gam_mtx(samp_idx_ini,:)' ~= 0));
-gam_ini = gam_mtx(samp_idx_ini,:);
+nBasis = d*n0+1;
+nBLength = 1e3;
+gam_mtx = zeros(nBLength,d);
+whCoord = zeros(nBLength,1);
+for k = 1:d
+   gam_mtx((k-1)*n0+2:k*n0+1,k) = (1:n0)';
+   whCoord((k-1)*n0+2:k*n0+1) = k;
+end
+no_pts = nBasis;
 
 % Compute design and collect response
-DD_ini = vdcorput_sg(gam_ini,2,ac_flg);
-yy_ini = func(DD_ini);
-% scatter(DD_ini(:,1),DD_ini(:,2)) %visualize in 2d
+DD(nBLength,d) = 0; %So we only index the elements that we need when calling them
+yy(nBLength,1) = 0;
+XX(nBLength,nBLength) = 0;
+basisVal(nBLength,d,s_max+1) = 0;
+
+
+DD(1:no_pts,:) = vdcorput_sg(gam_mtx(1:no_pts,:),2,ac_flg);
+yy(1:no_pts) = func(DD(1:no_pts,:));
 
 % Estimate Fourier coefficients via interpolation
-[XX,basisVal_ini] = eval_X_four(DD_ini,basisFun,gam_ini,s_max);
-fhat = XX\yy_ini; %least squares solution for fourier coefficients
-four_coef_est_ini = zeros(nBasis,1);
-four_coef_est_ini(samp_idx_ini) = fhat; %initial Fourier coefficient estimates
-XX_ini = XX;
+[XX(1:no_pts,1:no_pts),basisVal(1:no_pts,:,:)] = ...
+   eval_X_four(DD(1:no_pts,:),basisFun,gam_mtx(1:no_pts,:),s_max);
+fhat = XX(1:no_pts,1:no_pts)\yy(1:no_pts); %least squares solution for fourier coefficients
+four_coef_est = zeros(nBLength,1);
+four_coef_est(1:no_pts) = fhat; %initial Fourier coefficient estimates
 % yy - XX*fhat %check interpolation
 % cond(XX'*XX) %check cond'n number
 
@@ -91,10 +95,9 @@ basisValTest = eval_Basis(sob_pts,basisFun,s_max);
 err_vec(length(eps_vec),1) = 0; %container for errors
 n_vec(length(eps_vec),1) = 0; %container for sample sizes
 samp_idx(nBasis,1)=0; %Want this array and those below not to change in size
-DD(nBasis,d) = 0; %So we only index the elements that we need when calling them
-yy(nBasis,1) = 0;
-XX(nBasis,nBasis) = 0;
-basisVal(nBasis,d,s_max+1) = 0;
+gam_val_est(nBLength,1) = 0;
+gam_idx(nBLength,1) = 0;
+gam_bigs(nBlength,1) = false;
 
 for m = 1:length(eps_vec)
     m
@@ -102,18 +105,42 @@ for m = 1:length(eps_vec)
     % Algorithm:
     % 1) Sequentially observe function to satisfy (approximate) bound:
     cur_n = no_pts; %number of points used so far
-    samp_idx(1:cur_n) = samp_idx_ini; %load initial data
-    four_coef_est = four_coef_est_ini; %initial Fourier coefficient estimates
-    basisVal(1:cur_n,:,:) = basisVal_ini; %basis function values
-    DD(1:cur_n,:) = DD_ini;
-    yy(1:cur_n) = yy_ini;
-    XX(1:cur_n,1:cur_n) = XX_ini;
     
     % Compute w values and sample size from pilot sample
-    [n_bd,gam_val_est,w_est,~,f_hat_nm,errBd] = ...
-       samp_sz(four_coef_est,Gam_vec,w_vec,s_vec,gam_mtx, ...
-       eps_vec(m),C,n0,samp_idx(1:cur_n),false,false);
+    [n_bd,gam_val_est(1:cur_n),w_est,gam_idx(1:cur_n),f_hat_nm,errBd] = ...
+       samp_sz(four_coef_est(1:cur_n),Gam_vec,w_vec,s_vec,gam_mtx(1:cur_n,:), ...
+       eps_vec(m),C,n0,(1:cur_n)',false,false);
     f_hat_nm
+    
+    [~,wh_w_est] = sort(w_est,'descend');
+    cur_n_gam = cur_n;
+    for k = 1:d
+       %add one with additional s
+       cur_n_gam = cur_n_gam + 1;
+       gam_mtx(cur_n_gam,:) = zeros(1,d);
+       gam_mtx(cur_n_gam,:) = n0 + 1;
+       gam_val_est(cur_n_gam) = ...
+          comp_wts(Gam_vec,w_est,s_vec,gam_mtx(cur_n_gam,:));
+       wh_insert = find(gam_val_next < gam_val(gam_idx),1,'first');
+       if ~isempty(wh_insert)
+          gam_idx(wh_insert:cur_n_gam) = [cur_n_gam gam_idx(wh_insert:cur_n_gam-1)];
+       end
+       gam_bigs = true;
+       i
+       for j = 1:n0
+          %add additional interaction
+          cur_n_gam = cur_n_gam + 1;
+          gam_mtx(cur_n_gam,:) = zeros(1,d);
+          gam_mtx(cur_n_gam,:) = n0 + 1;
+          gam_val_est(cur_n_gam) = ...
+             comp_wts(Gam_vec,w_est,s_vec,gam_mtx(cur_n_gam,:));
+          wh_insert = find(gam_val_next < gam_val(gam_idx),1,'first');
+          if ~isempty(wh_insert)
+             gam_idx(wh_insert:cur_n_gam) = [cur_n_gam gam_idx(wh_insert:cur_n_gam-1)];
+          end
+
+          
+       
     
     gam_tmp = gam_val_est; % rank remaining indices
     gam_tmp(samp_idx(1:cur_n)) = 0;  
@@ -170,5 +197,5 @@ varRem = {'XX','rem_gam_idx','gam_tmp','gam_val_est','four_coef_est_ini'};
 clear(varRem{:})
 save(['sim_eval_results_' func_str '_ac' int2str(ac_flg) '.mat'])
 
-sim_eval_plot_results(func_str,ac_flg)
+sim_eval_plot_results
 

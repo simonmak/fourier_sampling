@@ -3,7 +3,10 @@ function sim_eval_plot_results(func_str,ac_flg)
 
 %func_str = 'chsan10'; %function string
 %ac_flg = 1; %arc-cos flag
-load(['sim_eval_results_' func_str '_ac' int2str(ac_flg) '.mat']) %save results to plot later %load results for plotting
+load(['sim_eval_results_' func_str '_ac' int2str(ac_flg) '.mat'], ...
+   'rat_vec', 'eps_vec', 'n_vec', 'w_est', 'func', 'd', 'cur_n', ...
+   'basisFun', 'gam_mtx', 's_max', 'four_coef_est', 'samp_idx', ...
+   'min_log10_eps', 'max_log10_eps') %load results for plotting
 InitializeDisplay %add some variables for nice plotting
 
 figure
@@ -42,7 +45,8 @@ x_Vis(:,xcoord) = xx(:);
 x_Vis(:,ycoord) = yy(:);
 f_true_Vis = func(x_Vis);
 [f_app_Vis] = ...
-       eval_f_four(x_Vis,basisFun,gam_mtx(samp_idx(1:cur_n),:),s_max,four_coef_est(samp_idx(1:cur_n)));
+       eval_f_four(x_Vis,basisFun,gam_mtx(samp_idx(1:cur_n),:), ...
+       s_max,four_coef_est(samp_idx(1:cur_n)));
 zl = [min([f_app_Vis; f_true_Vis]) max([f_app_Vis; f_true_Vis]) ]; %zlims
    
 figure
