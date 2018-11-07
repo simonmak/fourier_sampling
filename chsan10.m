@@ -37,7 +37,7 @@ function [y] = chsan10(xx,domain,weights)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 2
-   domain = [zeros(1,2); ones(1,2)]; %default domain
+   domain = [zeros(1,length(xx)); ones(1,length(xx))]; %default domain
 end
 if nargin < 3
    weights = ones(1,size(domain,2)); %default all coordinates active
