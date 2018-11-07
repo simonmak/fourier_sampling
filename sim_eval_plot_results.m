@@ -7,7 +7,8 @@ function sim_eval_plot_results(func_str,d,s_flg)
 %    'rat_vec', 'eps_vec', 'n_vec', 'w_est', 'func', 'd', 'cur_n', ...
 %    'basisFun', 'gam_mtx', 's_max', 'four_coef_est', 'samp_idx', ...
 %    'min_log10_eps', 'max_log10_eps') %load results for plotting
-load(['sim_eval_results_' func_str '_d' int2str(d) '_sflg' int2str(s_flg) '.mat']) %load results for plotting
+figString = ['sim_eval_results_' func_str '_d' int2str(d) '_sflg' int2str(s_flg)'];
+load([figString '.mat']) %load results for plotting
 InitializeDisplay %add some variables for nice plotting
 
 figure
@@ -33,9 +34,10 @@ set(hcb,'Ticks',tickVals,'TickLabels',tickLabels, ...
    'Limits',[tickVals(1) tickVals(end)])
 [~,leg_icons] = legend(h,{'\(||f-f_{\mbox{app}}||_{\infty}/\varepsilon\) \quad'}, ...
    'box','off','location','south','orientation','horizontal');
-title( [func_str ' \((d = ' num2str(d) ')\)'] )
+title( [plotTitle ' \((d = ' num2str(d) ')\)'] )
 set(gcf,'Position',[200,200,1000,500]) %make figure big enough and the right aspect ratio
 leg_icons(2).Children.MarkerSize = 30; %make legend icons large enough
+print('-depsc',[figString 'ErrN.eps'])
 
 %% Visualize (only a 2-d projection)
 [~,whCoordBig] = sort(w_vec,'descend');
@@ -68,6 +70,7 @@ xlabel(['\(x_{' int2str(whCoordBig(1)) '}\)'])
 ylabel(['\(x_{' int2str(whCoordBig(2)) '}\)'])
 zlabel(['\(f(x_{' int2str(whCoordBig(1)) '}, x_{' int2str(whCoordBig(2)) ...
    '}, ' num2str(nom_Val) ', \ldots)\)'])
+print('-depsc',[figString 'fTrue.eps'])
 
 figure
 rotate3d on
@@ -78,6 +81,8 @@ xlabel(['\(x_{' int2str(whCoordBig(1)) '}\)'])
 ylabel(['\(x_{' int2str(whCoordBig(2)) '}\)'])
 zlabel(['\(f_{\mbox{app}}(x_{' int2str(whCoordBig(1)) '}, x_{' int2str(whCoordBig(2)) ...
    '}, ' num2str(nom_Val) ', \ldots)\)'])
+print('-depsc',[figString 'fAppx.eps'])
+
 
 figure
 rotate3d on
@@ -87,6 +92,7 @@ xlabel(['\(x_{' int2str(whCoordBig(1)) '}\)'])
 ylabel(['\(x_{' int2str(whCoordBig(2)) '}\)'])
 zlabel(['\(\mbox{err}(x_{' int2str(whCoordBig(1)) '}, x_{' int2str(whCoordBig(2)) ...
    '}, ' num2str(nom_Val) ', \ldots)\)'])
+print('-depsc',[figString 'fErr.eps'])
 
 figure(1)
 

@@ -3,7 +3,7 @@
 % - Function evaluations (no direct Fourier sampling)
 
 %% Simulation settings
-cd 'Fourier sampling'
+%cd 'Fourier sampling'
 close all
 clearvars
 
@@ -14,10 +14,12 @@ n_app = 2^14; %number of points to use for approximating L_inf norm
 %basisFun = @legendreBasis; %Legendre polynomials
 basisFun = @chebyshevBasis; %Chebyshev polynomials
 ac_flg = true; %arc-cos flag
-s_flg = true; % do we know smoothness weights?
+s_flg = true; % we know smoothness weights?
+%s_flg = false; % we do NOT know smoothness weights?
 
 switch func_str
    case 'chsan10'
+      plotTitle = 'Cheng \& Sandu (2010) Function';
       % For the Cheng and Sandu Function
 %       weights = ones(1,d);
       weights = 1./(1:d).^3;
@@ -52,6 +54,7 @@ switch func_str
       eps_vec = flipud(eps_vec); %so that we visualize the smallest tolerance
     case 'otlcircuit'   
       % For the OTL circuit function
+      plotTitle = 'OTL Circuit Function';
       func = @(xx) otlcircuit(xx);
 %       Gam_vec = ones(1,d+1); %\Gamma (order wts) for approximated function
       Gam_vec = 1./(factorial(0:d).^2); %\Gamma (order wts) for approximated function

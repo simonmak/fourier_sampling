@@ -1,4 +1,4 @@
-function [y] = chsan10(xx,domain,whichVar)
+function [y] = chsan10(xx,domain,weights)
 
 % Modifed by Hickernell
 
@@ -40,13 +40,13 @@ if nargin < 2
    domain = [zeros(1,length(xx)); ones(1,length(xx))]; %default domain
 end
 if nargin < 3
-   whichVar = ones(1,size(domain,2)); %default all coordinates active
+   weights = ones(1,size(domain,2)); %default all coordinates active
 end
 
 xTrans = (xx - domain(1,:))./diff(domain,1,1); %transform to domain
 
-fact1 = cos(sum(xTrans(:,whichVar),2));
-fact2 = exp(prod(xTrans(:,whichVar),2));
+fact1 = cos(sum(xTrans .* weights,2));
+fact2 = exp(prod(xTrans .* weights,2));
 
 y = fact1 .* fact2;
 
