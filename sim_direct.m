@@ -17,8 +17,8 @@ s_vec_tr = 1./(( (0:s_max_tr) +1).^2); %s (smoothness wts)
 gam_mtx = permn(0:s_max,d); %compute this just once for all
 nBasis = size(gam_mtx,1); %number of basis elements
 n_app = 2^14; %number of points to use for approximating L_inf norm
-basisFun = @legendreBasis; %Legendre polynomials
-%basisFun = @chebyshevBasis; %Chebyshev polynomials
+basisFun = @legendreBasis; basisName = 'Legendre'; %Legendre polynomials
+%basisFun = @chebyshevBasis; basisName = 'Chebyshev'; %Chebyshev polynomials
 nm_flg = false; % do we know l-\infty norm?
 w_flg = false; % do we know product weights?
 rand_flg = true; % random +/- of Fourier coefficients?
@@ -89,8 +89,8 @@ end
 rat_vec = err_vec./eps_vec; %sample size vs error ratios
 rat_four_eps_vec = four_ignored./eps_vec; %sample size vs error ratios
 rat_normf_eps_vec = normf_gamma_ignored./eps_vec; %sample size vs error ratios
-save sim_direct_results.mat %save results to plot later
+save(['sim_direct_results_basis_' basisName '.mat']) %save results to plot later
 
 %%Plot results
-sim_direct_plot_results
+sim_direct_plot_results(basisName)
  

@@ -1,6 +1,7 @@
 function [Vm] = otlcircuit(xx)
 
-%Modified by Fred Hickernell
+%Modified by Simon Mak and Fred Hickernell
+%Domain scaled to [-1,1]
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
@@ -35,25 +36,25 @@ function [Vm] = otlcircuit(xx)
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-Rb1  = 50*xx(1)+100;
-Rb2  = 22.5*xx(2)+47.5;
-Rf   = 1.25*xx(3)+1.75;
-Rc1  = 0.65*xx(4)+1.85;
-Rc2  = 0.475*xx(5)+0.725;
-beta = 125*xx(6)+175;
+Rb1  = 50*xx(:,1)+100;
+Rb2  = 22.5*xx(:,2)+47.5;
+Rf   = 1.25*xx(:,3)+1.75;
+Rc1  = 0.65*xx(:,4)+1.85;
+Rc2  = 0.475*xx(:,5)+0.725;
+beta = 125*xx(:,6)+175;
 
-Vb1 = 12*Rb2 / (Rb1+Rb2);
-term1a = (Vb1+0.74) * beta * (Rc2+9);
-term1b = beta*(Rc2+9) + Rf;
-term1 = term1a / term1b;
+Vb1 = 12*Rb2 ./ (Rb1+Rb2);
+term1a = (Vb1+0.74) .* beta .* (Rc2+9);
+term1b = beta.*(Rc2+9) + Rf;
+term1 = term1a ./ term1b;
 
 term2a = 11.35 * Rf;
-term2b = beta*(Rc2+9) + Rf;
-term2 = term2a / term2b;
+term2b = beta.*(Rc2+9) + Rf;
+term2 = term2a ./ term2b;
 
-term3a = 0.74 * Rf * beta * (Rc2+9);
-term3b = (beta*(Rc2+9)+Rf) * Rc1;
-term3 = term3a / term3b;
+term3a = 0.74 * Rf .* beta .* (Rc2+9);
+term3b = (beta .* (Rc2+9) + Rf) .* Rc1;
+term3 = term3a ./ term3b;
 
 Vm = term1 + term2 + term3;
 

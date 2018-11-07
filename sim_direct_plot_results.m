@@ -1,7 +1,12 @@
 %%Plot results
-clearvars
+function sim_direct_plot_results(basisName)
 
-load sim_direct_results.mat %load results for plotting
+load(['sim_direct_results_basis_' basisName '.mat'], ...
+   'rat_vec', 'eps_vec', 'n_vec', 'w_est', 'd', ...
+   'basisFun', 'gam_mtx', 's_max', 'four_coef', ...
+   'min_log10_eps', 'max_log10_eps', 'nn', 'gam_idx', ...
+   'rat_four_eps_vec', 'rat_normf_eps_vec') %load results for plotting
+
 InitializeDisplay %add some variables for nice plotting
 
 figure
@@ -32,6 +37,7 @@ leg_icons(5).Children.MarkerSize = 20;
 leg_icons(6).Children.MarkerSize = 20;
 leg_icons(5).Children.LineWidth = 4;
 leg_icons(6).Children.LineWidth = 4;
+print -depsc SimDirectErr.eps
 %legend boxoff
 
 %% Visualize (only a 2-d projection)
@@ -59,6 +65,7 @@ xlabel(['\(x_{' int2str(whCoordBig(1)) '}\)'])
 ylabel(['\(x_{' int2str(whCoordBig(2)) '}\)'])
 zlabel(['\(f(x_{' int2str(whCoordBig(1)) '}, x_{' int2str(whCoordBig(2)) ...
    '}, ' num2str(nom_Val) ', \ldots)\)'])
+print -depsc SimDirectFun.eps
 
 figure
 rotate3d on
@@ -68,6 +75,7 @@ xlabel(['\(x_{' int2str(whCoordBig(1)) '}\)'])
 ylabel(['\(x_{' int2str(whCoordBig(2)) '}\)'])
 zlabel(['\(f_{\mbox{app}}(x_{' int2str(whCoordBig(1)) '}, x_{' int2str(whCoordBig(2)) ...
    '}, ' num2str(nom_Val) ', \ldots)\)'])
+print -depsc SimDirectFunAppx.eps
 
 figure
 rotate3d on
@@ -77,6 +85,7 @@ xlabel(['\(x_{' int2str(whCoordBig(1)) '}\)'])
 ylabel(['\(x_{' int2str(whCoordBig(2)) '}\)'])
 zlabel(['\(\mbox{err}(x_{' int2str(whCoordBig(1)) '}, x_{' int2str(whCoordBig(2)) ...
    '}, ' num2str(nom_Val) ', \ldots)\)'])
+print -depsc SimDirectFunErr.eps
 
 figure(1)
 

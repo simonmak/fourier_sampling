@@ -12,8 +12,8 @@ func_str = 'DettePepel10curv';
 switch func_str
    case 'chsan10'
       % For the Cheng and Sandu Function
-      d = 2;     %nominal dimension
-      weights = [1 1];
+      d = 4;     %nominal dimension
+      weights = [0 1 0 1];
       domain = [-1;1]*ones(1,d);
       func = @(xx) chsan10(xx,domain,weights);
       %func_str = 'chsan10';
