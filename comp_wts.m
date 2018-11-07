@@ -12,7 +12,7 @@ function gam_val = comp_wts(Gam_vec,w_vec,s_vec,gam_mtx)
        act_idx = gam_mtx(i,:) > 0;
        if sum(act_idx)
           gam_val(i) = Gam_vec(nnz(gam_mtx(i,:))+1) .* prod(w_vec(act_idx) ...
-             .* s_vec(gam_mtx(i,act_idx)+1));
+             .* s_vec(gam_mtx(i,act_idx)));
        end
     end
 
